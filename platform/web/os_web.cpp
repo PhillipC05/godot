@@ -72,16 +72,20 @@ MainLoop *OS_Web::get_main_loop() const {
 }
 
 void OS_Web::fs_sync_callback() {
+	MutexLock lock(get_singleton()->idb_mutex);
 	get_singleton()->idb_is_syncing = false;
 }
 
 bool OS_Web::main_loop_iterate() {
 	GodotProfileFrameMark;
 	GodotProfileZone("OS_Web::main_loop_iterate");
-	if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
-		idb_is_syncing = true;
-		idb_needs_sync = false;
-		godot_js_os_fs_sync(&fs_sync_callback);
+	{
+		MutexLock lock(idb_mutex);
+		if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
+			idb_is_syncing = true;
+			idb_needs_sync = false;
+			godot_js_os_fs_sync(&fs_sync_callback);
+		}
 	}
 
 	DisplayServer::get_singleton()->process_events();
@@ -235,6 +239,7 @@ void OS_Web::file_access_close_callback(const String &p_file, int p_flags) {
 	is_file_persistent = is_file_persistent || p_file.begins_with("/home/web_user/");
 #endif
 	if (is_file_persistent) {
+		MutexLock lock(os->idb_mutex);
 		os->idb_needs_sync = true;
 	}
 }
@@ -247,6 +252,7 @@ void OS_Web::dir_access_remove_callback(const String &p_file) {
 	is_file_persistent = is_file_persistent || p_file.begins_with("/home/web_user/");
 #endif
 	if (is_file_persistent) {
+		MutexLock lock(os->idb_mutex);
 		os->idb_needs_sync = true;
 	}
 }
@@ -262,6 +268,7 @@ void OS_Web::update_pwa_state_callback() {
 
 void OS_Web::force_fs_sync() {
 	if (is_userfs_persistent()) {
+		MutexLock lock(idb_mutex);
 		idb_needs_sync = true;
 	}
 }

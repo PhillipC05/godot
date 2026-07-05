@@ -35,6 +35,7 @@
 #include "webmidi_driver.h"
 
 #include "core/input/input_event.h"
+#include "core/os/mutex.h"
 #include "drivers/unix/os_unix.h"
 
 #include <emscripten/html5.h>
@@ -45,6 +46,7 @@ class OS_Web : public OS_Unix {
 
 	MIDIDriverWebMidi midi_driver;
 
+	Mutex idb_mutex;
 	bool idb_is_syncing = false;
 	bool idb_available = false;
 	bool idb_needs_sync = false;
