@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ImporterMeshInstance3D" inherits="Node3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Temporary node used internally by the scene import pipeline to hold an [ImporterMesh].
 	</brief_description>
 	<description>
+		[ImporterMeshInstance3D] is a node used exclusively within the scene import pipeline to represent [ImporterMesh] instances. It is not present in the final scene, and is replaced by a [MeshInstance3D] (or a similar node, depending on import settings) once the import is completed.
 	</description>
 	<tutorials>
 	</tutorials>

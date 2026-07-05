@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ScriptExtension" inherits="Script" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Class for implementing custom [Script] resources via GDExtension.
 	</brief_description>
 	<description>
+		This class allows to add new [Script] implementations via GDExtension. It is not intended to be used directly, but rather to be extended by a scripting language plugin so that its scripts are recognized as [Script] resources by the engine.
 	</description>
 	<tutorials>
 	</tutorials>

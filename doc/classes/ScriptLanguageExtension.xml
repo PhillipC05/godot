@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ScriptLanguageExtension" inherits="ScriptLanguage" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Class for adding new [ScriptLanguage]s to the engine via GDExtension.
 	</brief_description>
 	<description>
+		This class allows to add new [ScriptLanguage] implementations via GDExtension. It is not intended to be used directly, but rather to be extended by an add-on to expose a new scripting language to the engine, including compilation, debugging, and code completion support.
 	</description>
 	<tutorials>
 	</tutorials>

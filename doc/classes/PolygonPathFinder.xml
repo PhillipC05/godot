@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PolygonPathFinder" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Finds the shortest paths between two points on a polygon-based graph.
 	</brief_description>
 	<description>
+		[PolygonPathFinder] takes a set of 2D points and edge connections defining a polygon, then finds the shortest path between two arbitrary points that stays within the polygon's boundary, routing around any holes.
 	</description>
 	<tutorials>
 	</tutorials>

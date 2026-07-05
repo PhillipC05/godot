@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Skin" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A set of bind poses for a [Skeleton3D], used to deform a mesh via vertex skinning.
 	</brief_description>
 	<description>
+		A [Skin] holds the bind pose transforms for the bones of a [Skeleton3D], mapping mesh vertices to the bones that deform them. Each mesh surface stores per-vertex bone weights, and the [Skin] resource provides the rest-pose transforms needed to correctly apply those weights during vertex skinning.
 	</description>
 	<tutorials>
 	</tutorials>

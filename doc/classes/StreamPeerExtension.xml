@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StreamPeerExtension" inherits="StreamPeer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Class for implementing custom [StreamPeer]s via GDExtension.
 	</brief_description>
 	<description>
+		This class exists to make it easier to implement [StreamPeer] functionality via GDExtension. It is not intended to be used directly, but rather extended and overridden to provide custom stream-based communication protocols.
 	</description>
 	<tutorials>
 	</tutorials>

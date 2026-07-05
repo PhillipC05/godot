@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ScriptLanguage" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Base class for a language supported by the script engine.
 	</brief_description>
 	<description>
+		Base class for all built-in and GDExtension-provided scripting languages that Godot can run, such as [GDScript]. Instances of this class are usually singletons that manage the compilation and execution of scripts written in a given language.
 	</description>
 	<tutorials>
 	</tutorials>
