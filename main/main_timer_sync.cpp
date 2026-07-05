@@ -506,7 +506,12 @@ MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physic
 
 // determine wall clock step since last iteration
 double MainTimerSync::get_cpu_process_step() {
-	uint64_t cpu_ticks_elapsed = current_cpu_ticks_usec - last_cpu_ticks_usec;
+	// `OS::get_ticks_usec()` is documented as monotonic, but some hardware/OS combinations
+	// (e.g. non-synchronized TSCs across cores on Windows) have been observed to occasionally
+	// report a value slightly earlier than the previous call. Since both ticks are unsigned,
+	// treating that as a subtraction would underflow into a near-UINT64_MAX value instead of
+	// a small negative one, producing a huge single-frame time step spike. Clamp to zero instead.
+	uint64_t cpu_ticks_elapsed = (current_cpu_ticks_usec > last_cpu_ticks_usec) ? (current_cpu_ticks_usec - last_cpu_ticks_usec) : 0;
 	last_cpu_ticks_usec = current_cpu_ticks_usec;
 
 	cpu_ticks_elapsed = _delta_smoother.smooth_delta(cpu_ticks_elapsed);
