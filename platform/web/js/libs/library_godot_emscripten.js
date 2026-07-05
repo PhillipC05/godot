@@ -28,10 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+/**
+ * Emscripten-specific helper functions for the Godot Web platform.
+ * Provides information about the Emscripten runtime environment.
+ * @module GodotEmscripten
+ */
 const GodotEmscripten = {
 	$GodotEmscripten__deps: ['$GodotRuntime'],
 	$GodotEmscripten: {},
 
+	/**
+	 * Returns the Emscripten runtime version as a string.
+	 * @returns {number} Pointer to the version string in the WebAssembly heap.
+	 * @description Note: The caller is responsible for freeing the returned string pointer.
+	 */
 	godot_js_emscripten_get_version__proxy: 'sync',
 	godot_js_emscripten_get_version__sig: 'p',
 	godot_js_emscripten_get_version: function () {

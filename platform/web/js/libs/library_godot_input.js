@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-/*
- * IME API helper.
+/**
+ * IME (Input Method Editor) API helper for the Godot Web platform.
+ * Manages composition events for internationalized text input.
+ * @module GodotIME
  */
-
 const GodotIME = {
 	$GodotIME__deps: ['$GodotRuntime', '$GodotEventListeners'],
 	$GodotIME__postset: 'GodotOS.atexit(function(resolve, reject) { GodotIME.clear(); resolve(); });',
@@ -40,10 +41,19 @@ const GodotIME = {
 		active: false,
 		focusTimerIntervalId: -1,
 
+		/**
+		 * Computes the modifier key flags from a keyboard event.
+		 * @param {KeyboardEvent} evt - The keyboard event.
+		 * @returns {number} Bitmask of modifier keys (Shift, Alt, Ctrl, Meta).
+		 */
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
 		},
 
+		/**
+		 * Activates or deactivates the IME input element.
+		 * @param {boolean} active - Whether to show the IME element.
+		 */
 		ime_active: function (active) {
 			function clearFocusTimerInterval() {
 				clearInterval(GodotIME.focusTimerIntervalId);
@@ -76,6 +86,11 @@ const GodotIME = {
 			}
 		},
 
+		/**
+		 * Positions the IME input element at the specified coordinates.
+		 * @param {number} x - X coordinate in canvas space.
+		 * @param {number} y - Y coordinate in canvas space.
+		 */
 		ime_position: function (x, y) {
 			if (GodotIME.ime == null) {
 				return;
@@ -91,6 +106,13 @@ const GodotIME = {
 			GodotIME.ime.style.top = `${cly}px`;
 		},
 
+		/**
+		 * Initializes the IME input element and event handlers.
+		 * @param {number} ime_cb - Callback function pointer for IME composition events.
+		 * @param {number} key_cb - Callback function pointer for key events.
+		 * @param {number} code - Buffer pointer for key code.
+		 * @param {number} key - Buffer pointer for key value.
+		 */
 		init: function (ime_cb, key_cb, code, key) {
 			function key_event_cb(pressed, evt) {
 				const modifiers = GodotIME.getModifiers(evt);
@@ -106,7 +128,7 @@ const GodotIME = {
 				switch (event.type) {
 				case 'compositionstart':
 					ime_cb(0, null);
-					GodotIME.ime.innerHTML = '';
+					GodotIME.ime.textContent = '';
 					break;
 				case 'compositionupdate': {
 					const ptr = GodotRuntime.allocString(event.data);
@@ -117,7 +139,7 @@ const GodotIME = {
 					const ptr = GodotRuntime.allocString(event.data);
 					ime_cb(2, ptr);
 					GodotRuntime.free(ptr);
-					GodotIME.ime.innerHTML = '';
+					GodotIME.ime.textContent = '';
 				} break;
 				default:
 					// Do nothing.
@@ -155,6 +177,9 @@ const GodotIME = {
 			GodotIME.ime = ime;
 		},
 
+		/**
+		 * Removes the IME input element from the DOM.
+		 */
 		clear: function () {
 			if (GodotIME.ime == null) {
 				return;
@@ -173,11 +198,20 @@ mergeInto(LibraryManager.library, GodotIME);
 /*
  * Gamepad API helper.
  */
+/**
+ * Gamepad input handling for the Godot Web platform.
+ * Interfaces with the W3C Gamepad API to provide controller input.
+ * @module GodotInputGamepads
+ */
 const GodotInputGamepads = {
 	$GodotInputGamepads__deps: ['$GodotRuntime', '$GodotEventListeners'],
 	$GodotInputGamepads: {
 		samples: [],
 
+		/**
+		 * Retrieves the array of connected gamepads from the browser.
+		 * @returns {Array<Gamepad>} Array of gamepad objects.
+		 */
 		get_pads: function () {
 			try {
 				// Will throw in iframe when permission is denied.
@@ -193,15 +227,27 @@ const GodotInputGamepads = {
 			}
 		},
 
+		/**
+		 * Returns the stored gamepad samples.
+		 * @returns {Array<Object>} Array of gamepad sample objects.
+		 */
 		get_samples: function () {
 			return GodotInputGamepads.samples;
 		},
 
+		/**
+		 * Gets a specific gamepad sample by index.
+		 * @param {number} index - Index of the sample to retrieve.
+		 * @returns {Object|null} The gamepad sample at the index, or null if not found.
+		 */
 		get_sample: function (index) {
 			const samples = GodotInputGamepads.samples;
 			return index < samples.length ? samples[index] : null;
 		},
 
+		/**
+		 * Samples all connected gamepads and stores the state.
+		 */
 		sample: function () {
 			const pads = GodotInputGamepads.get_pads();
 			const samples = [];
@@ -228,6 +274,10 @@ const GodotInputGamepads = {
 			GodotInputGamepads.samples = samples;
 		},
 
+		/**
+		 * Initializes gamepad support and registers connection callbacks.
+		 * @param {number} onchange - Callback function pointer for gamepad connect/disconnect events.
+		 */
 		init: function (onchange) {
 			GodotInputGamepads.samples = [];
 			function add(pad) {
@@ -257,6 +307,11 @@ const GodotInputGamepads = {
 			}, false);
 		},
 
+		/**
+		 * Generates a GUID string for a gamepad based on its vendor and product IDs.
+		 * @param {Gamepad} pad - The gamepad object.
+		 * @returns {string} The GUID string combining OS, vendor, and product.
+		 */
 		get_guid: function (pad) {
 			if (pad.mapping) {
 				return pad.mapping;
@@ -311,12 +366,21 @@ mergeInto(LibraryManager.library, GodotInputGamepads);
  * NOTE: The temporary files are removed after the callback. This means that
  * deferred callbacks won't be able to access the files.
  */
+/**
+ * File drag and drop handling for the Godot Web platform.
+ * Processes dropped files and copies them to the virtual file system.
+ * @module GodotInputDragDrop
+ */
 const GodotInputDragDrop = {
 	$GodotInputDragDrop__deps: ['$FS', '$GodotFS'],
 	$GodotInputDragDrop: {
 		promises: [],
 		pending_files: [],
 
+		/**
+		 * Adds a filesystem entry (file or directory) to be processed.
+		 * @param {FileSystemFileEntry|FileSystemDirectoryEntry} entry - The filesystem entry.
+		 */
 		add_entry: function (entry) {
 			if (entry.isDirectory) {
 				GodotInputDragDrop.add_dir(entry);
@@ -327,6 +391,10 @@ const GodotInputDragDrop = {
 			}
 		},
 
+		/**
+		 * Processes a directory entry recursively.
+		 * @param {FileSystemDirectoryEntry} entry - The directory entry.
+		 */
 		add_dir: function (entry) {
 			GodotInputDragDrop.promises.push(new Promise(function (resolve, reject) {
 				const reader = entry.createReader();
@@ -339,6 +407,10 @@ const GodotInputDragDrop = {
 			}));
 		},
 
+		/**
+		 * Reads a file entry and adds it to the pending files queue.
+		 * @param {FileSystemFileEntry} entry - The file entry.
+		 */
 		add_file: function (entry) {
 			GodotInputDragDrop.promises.push(new Promise(function (resolve, reject) {
 				entry.file(function (file) {
@@ -369,6 +441,11 @@ const GodotInputDragDrop = {
 			}));
 		},
 
+		/**
+		 * Recursively processes all pending file promises.
+		 * @param {Function} resolve - Promise resolve callback.
+		 * @param {Function} reject - Promise reject callback.
+		 */
 		process: function (resolve, reject) {
 			if (GodotInputDragDrop.promises.length === 0) {
 				resolve();
@@ -381,6 +458,12 @@ const GodotInputDragDrop = {
 			});
 		},
 
+		/**
+		 * Processes a drop event and prepares files for the callback.
+		 * @param {DragEvent} ev - The drop event.
+		 * @param {Function} callback - Callback to receive the list of dropped file paths.
+		 * @private
+		 */
 		_process_event: function (ev, callback) {
 			ev.preventDefault();
 			if (ev.dataTransfer.items) {
@@ -437,6 +520,11 @@ const GodotInputDragDrop = {
 			});
 		},
 
+		/**
+		 * Removes dropped files and directories from the virtual file system.
+		 * @param {Array<string>} files - Array of file paths to remove.
+		 * @param {string} drop_path - The base drop directory path.
+		 */
 		remove_drop: function (files, drop_path) {
 			const dirs = [drop_path.substr(0, drop_path.length - 1)];
 			// Remove temporary files
@@ -467,6 +555,11 @@ const GodotInputDragDrop = {
 			});
 		},
 
+		/**
+		 * Creates a drop event handler function.
+		 * @param {Function} callback - Callback to receive the dropped file paths.
+		 * @returns {Function} The drop event handler function.
+		 */
 		handler: function (callback) {
 			return function (ev) {
 				GodotInputDragDrop._process_event(ev, callback);
@@ -479,16 +572,32 @@ mergeInto(LibraryManager.library, GodotInputDragDrop);
 /*
  * Godot exposed input functions.
  */
+/**
+ * Input handling for the Godot Web platform.
+ * Provides mouse, touch, keyboard, gamepad, IME, and drag/drop input support.
+ * @module GodotInput
+ */
 const GodotInput = {
 	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop', '$GodotIME'],
 	$GodotInput: {
 		inputKeyCallback: null,
 		setInputKeyData: null,
 
+		/**
+		 * Computes the modifier key flags from a keyboard event.
+		 * @param {KeyboardEvent|MouseEvent} evt - The input event.
+		 * @returns {number} Bitmask of modifier keys (Shift, Alt, Ctrl, Meta).
+		 */
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
 		},
 
+		/**
+		 * Computes the position of an event in canvas coordinates.
+		 * @param {MouseEvent|TouchEvent} evt - The mouse or touch event.
+		 * @param {DOMRect} rect - The canvas bounding rectangle.
+		 * @returns {Array<number>} [x, y] coordinates in canvas space.
+		 */
 		computePosition: function (evt, rect) {
 			const canvas = GodotConfig.canvas;
 			const rw = canvas.width / rect.width;
@@ -498,6 +607,11 @@ const GodotInput = {
 			return [x, y];
 		},
 
+		/**
+		 * Processes a keyboard event and forwards it to the registered callback.
+		 * @param {boolean} pIsPressed - Whether the key is pressed (true) or released (false).
+		 * @param {KeyboardEvent} pEvent - The keyboard event.
+		 */
 		onKeyEvent: function (pIsPressed, pEvent) {
 			if (GodotInput.inputKeyCallback == null) {
 				throw new TypeError('GodotInput.onKeyEvent(): GodotInput.inputKeyCallback is null, cannot process key event.');
@@ -515,6 +629,10 @@ const GodotInput = {
 
 	/*
 	 * Mouse API
+	 */
+	/**
+	 * Registers a callback for mouse move events.
+	 * @param {number} callback - Callback function pointer.
 	 */
 	godot_js_input_mouse_move_cb__proxy: 'sync',
 	godot_js_input_mouse_move_cb__sig: 'vi',
@@ -535,6 +653,10 @@ const GodotInput = {
 		GodotEventListeners.add(window, 'pointermove', move_cb, false);
 	},
 
+	/**
+	 * Registers a callback for mouse wheel events.
+	 * @param {number} callback - Callback function pointer.
+	 */
 	godot_js_input_mouse_wheel_cb__proxy: 'sync',
 	godot_js_input_mouse_wheel_cb__sig: 'vi',
 	godot_js_input_mouse_wheel_cb: function (callback) {
@@ -547,6 +669,10 @@ const GodotInput = {
 		GodotEventListeners.add(GodotConfig.canvas, 'wheel', wheel_cb, false);
 	},
 
+	/**
+	 * Registers callbacks for mouse button events.
+	 * @param {number} callback - Callback function pointer.
+	 */
 	godot_js_input_mouse_button_cb__proxy: 'sync',
 	godot_js_input_mouse_button_cb__sig: 'vi',
 	godot_js_input_mouse_button_cb: function (callback) {
@@ -571,6 +697,12 @@ const GodotInput = {
 
 	/*
 	 * Touch API
+	 */
+	/**
+	 * Registers callbacks for touch events.
+	 * @param {number} callback - Callback function pointer.
+	 * @param {number} ids - Pointer to store touch identifiers.
+	 * @param {number} coords - Pointer to store touch coordinates.
 	 */
 	godot_js_input_touch_cb__proxy: 'sync',
 	godot_js_input_touch_cb__sig: 'viii',
@@ -606,6 +738,12 @@ const GodotInput = {
 	/*
 	 * Key API
 	 */
+	/**
+	 * Registers callbacks for keyboard events.
+	 * @param {number} pCallback - Callback function pointer for key events.
+	 * @param {number} pCodePtr - Buffer pointer for key code.
+	 * @param {number} pKeyPtr - Buffer pointer for key value.
+	 */
 	godot_js_input_key_cb__proxy: 'sync',
 	godot_js_input_key_cb__sig: 'viii',
 	godot_js_input_key_cb: function (pCallback, pCodePtr, pKeyPtr) {
@@ -621,18 +759,34 @@ const GodotInput = {
 	/*
 	 * IME API
 	 */
+	/**
+	 * Sets the IME active state.
+	 * @param {number} p_active - Non-zero to activate IME, 0 to deactivate.
+	 */
 	godot_js_set_ime_active__proxy: 'sync',
 	godot_js_set_ime_active__sig: 'vi',
 	godot_js_set_ime_active: function (p_active) {
 		GodotIME.ime_active(p_active);
 	},
 
+	/**
+	 * Sets the IME position.
+	 * @param {number} p_x - X coordinate in canvas space.
+	 * @param {number} p_y - Y coordinate in canvas space.
+	 */
 	godot_js_set_ime_position__proxy: 'sync',
 	godot_js_set_ime_position__sig: 'vii',
 	godot_js_set_ime_position: function (p_x, p_y) {
 		GodotIME.ime_position(p_x, p_y);
 	},
 
+	/**
+	 * Registers IME event callbacks.
+	 * @param {number} p_ime_cb - Callback function pointer for IME events.
+	 * @param {number} p_key_cb - Callback function pointer for key events.
+	 * @param {number} code - Buffer pointer for key code.
+	 * @param {number} key - Buffer pointer for key value.
+	 */
 	godot_js_set_ime_cb__proxy: 'sync',
 	godot_js_set_ime_cb__sig: 'viiii',
 	godot_js_set_ime_cb: function (p_ime_cb, p_key_cb, code, key) {
@@ -641,6 +795,10 @@ const GodotInput = {
 		GodotIME.init(ime_cb, key_cb, code, key);
 	},
 
+	/**
+	 * Checks if the IME element is currently focused.
+	 * @returns {number} 1 if IME is focused, 0 otherwise.
+	 */
 	godot_js_is_ime_focused__proxy: 'sync',
 	godot_js_is_ime_focused__sig: 'i',
 	godot_js_is_ime_focused: function () {
@@ -650,6 +808,10 @@ const GodotInput = {
 	/*
 	 * Gamepad API
 	 */
+	/**
+	 * Registers a callback for gamepad connect/disconnect events.
+	 * @param {number} change_cb - Callback function pointer.
+	 */
 	godot_js_input_gamepad_cb__proxy: 'sync',
 	godot_js_input_gamepad_cb__sig: 'vi',
 	godot_js_input_gamepad_cb: function (change_cb) {
@@ -657,12 +819,20 @@ const GodotInput = {
 		GodotInputGamepads.init(onchange);
 	},
 
+	/**
+	 * Returns the number of sampled gamepads.
+	 * @returns {number} Number of gamepad samples.
+	 */
 	godot_js_input_gamepad_sample_count__proxy: 'sync',
 	godot_js_input_gamepad_sample_count__sig: 'i',
 	godot_js_input_gamepad_sample_count: function () {
 		return GodotInputGamepads.get_samples().length;
 	},
 
+	/**
+	 * Samples all connected gamepads.
+	 * @returns {number} Always returns 0.
+	 */
 	godot_js_input_gamepad_sample__proxy: 'sync',
 	godot_js_input_gamepad_sample__sig: 'i',
 	godot_js_input_gamepad_sample: function () {
@@ -670,6 +840,16 @@ const GodotInput = {
 		return 0;
 	},
 
+	/**
+	 * Retrieves gamepad sample data for a specific index.
+	 * @param {number} p_index - Gamepad index.
+	 * @param {number} r_btns - Pointer to store button values.
+	 * @param {number} r_btns_num - Pointer to store button count.
+	 * @param {number} r_axes - Pointer to store axis values.
+	 * @param {number} r_axes_num - Pointer to store axis count.
+	 * @param {number} r_standard - Pointer to store standard mapping flag.
+	 * @returns {number} 0 on success, 1 if gamepad not found or disconnected.
+	 */
 	godot_js_input_gamepad_sample_get__proxy: 'sync',
 	godot_js_input_gamepad_sample_get__sig: 'iiiiiii',
 	godot_js_input_gamepad_sample_get: function (p_index, r_btns, r_btns_num, r_axes, r_axes_num, r_standard) {
@@ -697,6 +877,10 @@ const GodotInput = {
 	/*
 	 * Drag/Drop API
 	 */
+	/**
+	 * Registers a callback for file drop events.
+	 * @param {number} callback - Callback function pointer.
+	 */
 	godot_js_input_drop_files_cb__proxy: 'sync',
 	godot_js_input_drop_files_cb__sig: 'vi',
 	godot_js_input_drop_files_cb: function (callback) {
@@ -720,6 +904,10 @@ const GodotInput = {
 	},
 
 	/* Paste API */
+	/**
+	 * Registers a callback for paste events.
+	 * @param {number} callback - Callback function pointer.
+	 */
 	godot_js_input_paste_cb__proxy: 'sync',
 	godot_js_input_paste_cb__sig: 'vi',
 	godot_js_input_paste_cb: function (callback) {
@@ -732,6 +920,10 @@ const GodotInput = {
 		}, false);
 	},
 
+	/**
+	 * Triggers a vibration on handheld devices.
+	 * @param {number} p_duration_ms - Vibration duration in milliseconds.
+	 */
 	godot_js_input_vibrate_handheld__proxy: 'sync',
 	godot_js_input_vibrate_handheld__sig: 'vi',
 	godot_js_input_vibrate_handheld: function (p_duration_ms) {
