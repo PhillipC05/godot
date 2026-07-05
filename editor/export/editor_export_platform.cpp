@@ -681,6 +681,16 @@ void EditorExportPlatform::_export_find_dependencies(const String &p_path, HashS
 		return;
 	}
 
+	// `find_file()` resolves case-insensitively when the project's filesystem is
+	// case-insensitive (the default on Windows/macOS), so a `res://` reference with the
+	// wrong case (e.g. `preload("res://Wrong/case.png")`) can still resolve here even
+	// though it will fail to load on a case-sensitive export target (Linux, Web). Warn
+	// so the mismatch gets fixed instead of only surfacing as a runtime crash.
+	const String actual_path = dir->get_file_path(file_idx);
+	if (actual_path != p_path) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Resource path \"%s\" differs in case from the file on disk (\"%s\"). This will fail to load on case-sensitive platforms (Linux, Web) even though it works in the editor."), p_path, actual_path));
+	}
+
 	Vector<String> deps = dir->get_file_deps(file_idx);
 
 	for (int i = 0; i < deps.size(); i++) {
