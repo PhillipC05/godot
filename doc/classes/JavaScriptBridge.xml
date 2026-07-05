@@ -45,6 +45,7 @@
 			<description>
 				Execute the string [param code] as JavaScript code within the browser window. This is a call to the actual global JavaScript function [code skip-lint]eval()[/code].
 				If [param use_global_execution_context] is [code]true[/code], the code will be evaluated in the global execution context. Otherwise, it is evaluated in the execution context of a function within the engine's runtime environment.
+				[b]Security Note:[/b] This method executes arbitrary JavaScript code. Games that use this method with untrusted user input (e.g., from the network, or from user-entered text) bear the security risk. Never evaluate code from sources you don't trust, as it can lead to XSS vulnerabilities or other malicious behavior.
 			</description>
 		</method>
 		<method name="force_fs_sync">

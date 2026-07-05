@@ -343,6 +343,31 @@ mergeInto(LibraryManager.library, GodotJSWrapper);
 const GodotEval = {
 	godot_js_eval__deps: ['$GodotRuntime'],
 	godot_js_eval__sig: 'iiiiiii',
+	/**
+	 * Executes JavaScript code in the browser using the eval() function.
+	 * This is the public API implementation for JavaScriptBridge.eval().
+	 *
+	 * Security Note: This function executes arbitrary JavaScript code. Games that use this
+	 * method with untrusted user input bear the security risk. Never evaluate code from
+	 * sources you don't trust, as it can lead to XSS vulnerabilities or other malicious
+	 * behavior.
+	 *
+	 * Context Behavior:
+	 * - When p_use_global_ctx is true, the code is evaluated in the global execution context
+	 *   via an indirect eval call, allowing access to global variables and proper variable
+	 *   declarations (var, function, let, const) to create global bindings.
+	 * - When p_use_global_ctx is false, the code is evaluated in the local function context,
+	 *   which means variables declared with var won't become global, and strict mode behavior
+	 *   applies.
+	 *
+	 * @param {number} p_js - Pointer to the JavaScript code string in the WebAssembly heap.
+	 * @param {number} p_use_global_ctx - Boolean flag (as number) to use global execution context.
+	 * @param {number} p_union_ptr - Pointer to store the result in the WebAssembly heap.
+	 * @param {number} p_byte_arr - Pointer for byte array output.
+	 * @param {number} p_byte_arr_write - Pointer for byte array write callback.
+	 * @param {number} p_callback - Function pointer for byte array callback.
+	 * @returns {number} The type of the evaluated result (1=BOOL, 3=FLOAT, 4=STRING, 29=PACKED_BYTE_ARRAY, 0=NIL).
+	 */
 	godot_js_eval: function (p_js, p_use_global_ctx, p_union_ptr, p_byte_arr, p_byte_arr_write, p_callback) {
 		const js_code = GodotRuntime.parseString(p_js);
 		let eval_ret = null;
