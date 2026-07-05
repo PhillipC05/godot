@@ -865,27 +865,13 @@ Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_
 	const String basepath = dest.path_join("tmp_js_export");
 	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
 	if (err != OK) {
-		// Export generates several files, clean them up on failure.
-		DirAccess::remove_file_or_error(basepath + ".html");
-		DirAccess::remove_file_or_error(basepath + ".offline.html");
-		DirAccess::remove_file_or_error(basepath + ".js");
-		DirAccess::remove_file_or_error(basepath + ".audio.worklet.js");
-		DirAccess::remove_file_or_error(basepath + ".audio.position.worklet.js");
-		DirAccess::remove_file_or_error(basepath + ".service.worker.js");
-		DirAccess::remove_file_or_error(basepath + ".pck");
-		DirAccess::remove_file_or_error(basepath + ".png");
-		DirAccess::remove_file_or_error(basepath + ".side.wasm");
-		DirAccess::remove_file_or_error(basepath + ".wasm");
-		DirAccess::remove_file_or_error(basepath + ".icon.png");
-		DirAccess::remove_file_or_error(basepath + ".apple-touch-icon.png");
+		_cleanup_temp_files();
 	}
 	return err;
 }
 
 Error EditorExportPlatformWeb::_launch_browser(const String &p_bind_host, const uint16_t p_bind_port, const bool p_use_tls) {
 	OS::get_singleton()->shell_open(String((p_use_tls ? "https://" : "http://") + p_bind_host + ":" + itos(p_bind_port) + "/tmp_js_export.html"));
-	// FIXME: Find out how to clean up export files after running the successfully
-	// exported game. Might not be trivial.
 	return OK;
 }
 
@@ -910,8 +896,25 @@ Error EditorExportPlatformWeb::_start_server(const String &p_bind_host, const ui
 	return err;
 }
 
+void EditorExportPlatformWeb::_cleanup_temp_files() {
+	const String basepath = EditorPaths::get_singleton()->get_temp_dir().path_join("web").path_join("tmp_js_export");
+	DirAccess::remove_file_or_error(basepath + ".html");
+	DirAccess::remove_file_or_error(basepath + ".offline.html");
+	DirAccess::remove_file_or_error(basepath + ".js");
+	DirAccess::remove_file_or_error(basepath + ".audio.worklet.js");
+	DirAccess::remove_file_or_error(basepath + ".audio.position.worklet.js");
+	DirAccess::remove_file_or_error(basepath + ".service.worker.js");
+	DirAccess::remove_file_or_error(basepath + ".pck");
+	DirAccess::remove_file_or_error(basepath + ".png");
+	DirAccess::remove_file_or_error(basepath + ".side.wasm");
+	DirAccess::remove_file_or_error(basepath + ".wasm");
+	DirAccess::remove_file_or_error(basepath + ".icon.png");
+	DirAccess::remove_file_or_error(basepath + ".apple-touch-icon.png");
+}
+
 Error EditorExportPlatformWeb::_stop_server() {
 	server->stop();
+	_cleanup_temp_files();
 	return OK;
 }
 
@@ -944,4 +947,5 @@ void EditorExportPlatformWeb::initialize() {
 }
 
 EditorExportPlatformWeb::~EditorExportPlatformWeb() {
+	_cleanup_temp_files();
 }
