@@ -2213,9 +2213,15 @@ void RasterizerCanvasGLES3::canvas_begin(RID p_to_render_target, bool p_to_backb
 	} else {
 		glBindFramebuffer(GL_FRAMEBUFFER, render_target->fbo);
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 4);
-		glBindTexture(GL_TEXTURE_2D, render_target->backbuffer);
 		if (render_target->backbuffer != 0) {
+			glBindTexture(GL_TEXTURE_2D, render_target->backbuffer);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p_backbuffer_has_mipmaps ? render_target->mipmap_count - 1 : 0);
+		} else {
+			// No backbuffer has been allocated yet (e.g. no CanvasItem has read SCREEN_TEXTURE this frame).
+			// Bind a dummy texture instead of leaving the unit unbound, which WebGL validation
+			// layers (e.g. Chrome) flag with a warning on every draw call.
+			GLES3::Texture *tex = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_WHITE));
+			glBindTexture(GL_TEXTURE_2D, tex->tex_id);
 		}
 	}
 
