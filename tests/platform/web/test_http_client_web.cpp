@@ -61,6 +61,24 @@ public:
 		return _get_response_headers_as_dictionary();
 	}
 
+	// Stubs for pure virtual methods (not exercised in header parsing tests).
+	Error request(Method, const String &, const Vector<String> &, const uint8_t *, int) override { return ERR_UNAVAILABLE; }
+	Error connect_to_host(const String &, int, Ref<TLSOptions>) override { return ERR_UNAVAILABLE; }
+	void set_connection(const Ref<StreamPeer> &) override {}
+	Ref<StreamPeer> get_connection() const override { return Ref<StreamPeer>(); }
+	void close() override {}
+	Status get_status() const override { return STATUS_DISCONNECTED; }
+	bool has_response() const override { return false; }
+	bool is_response_chunked() const override { return false; }
+	int get_response_code() const override { return 0; }
+	int64_t get_response_body_length() const override { return -1; }
+	PackedByteArray read_response_body_chunk() override { return PackedByteArray(); }
+	void set_blocking_mode(bool) override {}
+	bool is_blocking_mode_enabled() const override { return false; }
+	void set_read_chunk_size(int) override {}
+	int get_read_chunk_size() const override { return 0; }
+	Error poll() override { return ERR_UNAVAILABLE; }
+
 	MockHTTPClient() {}
 };
 
