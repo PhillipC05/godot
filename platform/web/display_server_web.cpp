@@ -68,7 +68,7 @@ bool DisplayServerWeb::check_size_force_redraw() {
 	bool size_changed = godot_js_display_size_update() != 0;
 	if (size_changed && rect_changed_callback.is_valid()) {
 		Size2i window_size = window_get_size();
-		Variant size = Rect2i(Point2i(), window_size); // TODO use window_get_position if implemented.
+		Variant size = Rect2i(window_get_position(), window_size);
 		rect_changed_callback.call(size);
 		emscripten_set_canvas_element_size(canvas_id, window_size.x, window_size.y);
 	}
