@@ -6199,6 +6199,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
+			// Windows posts a synthetic WM_MOUSEMOVE at the cursor's unchanged position when
+			// capture is released (e.g. right after a mouse button up); ignore it here so it
+			// doesn't turn into a spurious zero-relative InputEventMouseMotion.
+			bool no_movement = !old_invalid && mouse_mode != DisplayServerEnums::MOUSE_MODE_CAPTURED && mm->get_position() == Vector2(old_x, old_y);
+
 			if (mouse_mode == DisplayServerEnums::MOUSE_MODE_CAPTURED) {
 				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
 				old_x = c.x;
@@ -6229,6 +6234,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative_screen_position(mm->get_relative());
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
+
+			if (no_movement) {
+				break;
+			}
 
 			if (receiving_window_id != window_id) {
 				// Adjust event position relative to window distance when event is sent to a different window.
