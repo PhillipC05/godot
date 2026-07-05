@@ -480,22 +480,3 @@ void AudioDriverWorklet::_capture_callback(int p_pos, int p_samples) {
 }
 
 #endif // THREADS_ENABLED
-
-/// ScriptProcessorNode implementation
-AudioDriverScriptProcessor *AudioDriverScriptProcessor::singleton = nullptr;
-
-void AudioDriverScriptProcessor::_process_callback() {
-	AudioDriverScriptProcessor::get_singleton()->_audio_driver_capture();
-	AudioDriverScriptProcessor::get_singleton()->_audio_driver_process();
-}
-
-Error AudioDriverScriptProcessor::create(int &p_buffer_samples, int p_channels) {
-	if (!godot_audio_has_script_processor()) {
-		return ERR_UNAVAILABLE;
-	}
-	return (Error)godot_audio_script_create(&p_buffer_samples, p_channels);
-}
-
-void AudioDriverScriptProcessor::start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) {
-	godot_audio_script_start(p_in_buf, p_in_buf_size, p_out_buf, p_out_buf_size, &_process_callback);
-}

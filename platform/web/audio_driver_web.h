@@ -168,24 +168,3 @@ public:
 };
 
 #endif // THREADS_ENABLED
-
-class AudioDriverScriptProcessor : public AudioDriverWeb {
-private:
-	static void _process_callback();
-
-	static AudioDriverScriptProcessor *singleton;
-
-protected:
-	virtual Error create(int &p_buffer_size, int p_output_channels) override;
-	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
-
-public:
-	virtual const char *get_name() const override { return "ScriptProcessor"; }
-
-	virtual void lock() override {}
-	virtual void unlock() override {}
-
-	static AudioDriverScriptProcessor *get_singleton() { return singleton; }
-
-	AudioDriverScriptProcessor() { singleton = this; }
-};
