@@ -639,9 +639,19 @@ const GodotInput = {
 	godot_js_input_mouse_move_cb: function (callback) {
 		const func = GodotRuntime.get_func(callback);
 		const canvas = GodotConfig.canvas;
+		let last_x = null;
+		let last_y = null;
 		function move_cb(evt) {
 			const rect = canvas.getBoundingClientRect();
 			const pos = GodotInput.computePosition(evt, rect);
+			// Firefox fires pointermove with zero movement and an unchanged
+			// position while the mouse is stationary (GH #51810); skip those
+			// so relative-motion checks (e.g. `relative == Vector2.ZERO`) hold.
+			if (evt.movementX === 0 && evt.movementY === 0 && pos[0] === last_x && pos[1] === last_y) {
+				return;
+			}
+			last_x = pos[0];
+			last_y = pos[1];
 			// Scale movement
 			const rw = canvas.width / rect.width;
 			const rh = canvas.height / rect.height;
