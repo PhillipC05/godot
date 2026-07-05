@@ -262,6 +262,8 @@ class DisplayServerX11 : public DisplayServer {
 		HashMap<int, Vector2> pen_tilt_x_range;
 		HashMap<int, Vector2> pen_tilt_y_range;
 		HashMap<int, bool> pen_inverted_devices;
+		double vertical_scroll_increment = 0.0;
+		double horizontal_scroll_increment = 0.0;
 		XIEventMask all_event_mask;
 		HashMap<int, Vector2> state;
 		double pressure;

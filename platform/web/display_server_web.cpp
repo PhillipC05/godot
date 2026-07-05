@@ -678,35 +678,45 @@ int DisplayServerWeb::_mouse_wheel_callback(int p_delta_mode, double p_delta_x, 
 		DELTA_MODE_LINE = 1,
 		DELTA_MODE_PAGE = 2,
 	};
-	const float MOUSE_WHEEL_PIXEL_FACTOR = 0.03f;
-	const float MOUSE_WHEEL_LINE_FACTOR = 0.3f;
-	const float MOUSE_WHEEL_PAGE_FACTOR = 1.0f;
-	float mouse_wheel_factor;
 
+	// Browsers report a single deltaMode for the whole event, but on Linux in
+	// particular, vertical wheel notches are commonly reported as DELTA_MODE_LINE
+	// while trackpad horizontal swipes on the same device are reported as
+	// DELTA_MODE_PIXEL. Convert non-pixel modes to an approximate pixel
+	// equivalent first, then apply a single factor to both axes so vertical and
+	// horizontal scrolling end up comparably sensitive (see GH-49873).
+	const double LINE_HEIGHT_PX = 16.0;
+	const double PAGE_SIZE_PX = 800.0;
+	const float MOUSE_WHEEL_PIXEL_FACTOR = 0.03f;
+
+	double delta_x = p_delta_x;
+	double delta_y = p_delta_y;
 	switch (p_delta_mode) {
-		case DELTA_MODE_PIXEL: {
-			mouse_wheel_factor = MOUSE_WHEEL_PIXEL_FACTOR;
-		} break;
 		case DELTA_MODE_LINE: {
-			mouse_wheel_factor = MOUSE_WHEEL_LINE_FACTOR;
+			delta_x *= LINE_HEIGHT_PX;
+			delta_y *= LINE_HEIGHT_PX;
 		} break;
 		case DELTA_MODE_PAGE: {
-			mouse_wheel_factor = MOUSE_WHEEL_PAGE_FACTOR;
+			delta_x *= PAGE_SIZE_PX;
+			delta_y *= PAGE_SIZE_PX;
+		} break;
+		case DELTA_MODE_PIXEL:
+		default: {
 		} break;
 	}
 
-	if (p_delta_y < 0) {
+	if (delta_y < 0) {
 		ev->set_button_index(MouseButton::WHEEL_UP);
-		ev->set_factor(-p_delta_y * mouse_wheel_factor);
-	} else if (p_delta_y > 0) {
+		ev->set_factor(-delta_y * MOUSE_WHEEL_PIXEL_FACTOR);
+	} else if (delta_y > 0) {
 		ev->set_button_index(MouseButton::WHEEL_DOWN);
-		ev->set_factor(p_delta_y * mouse_wheel_factor);
-	} else if (p_delta_x > 0) {
+		ev->set_factor(delta_y * MOUSE_WHEEL_PIXEL_FACTOR);
+	} else if (delta_x > 0) {
 		ev->set_button_index(MouseButton::WHEEL_LEFT);
-		ev->set_factor(p_delta_x * mouse_wheel_factor);
-	} else if (p_delta_x < 0) {
+		ev->set_factor(delta_x * MOUSE_WHEEL_PIXEL_FACTOR);
+	} else if (delta_x < 0) {
 		ev->set_button_index(MouseButton::WHEEL_RIGHT);
-		ev->set_factor(-p_delta_x * mouse_wheel_factor);
+		ev->set_factor(-delta_x * MOUSE_WHEEL_PIXEL_FACTOR);
 	} else {
 		return false;
 	}
