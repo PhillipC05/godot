@@ -100,6 +100,7 @@ platform/android/java/*/libs/
 # Web platform
 *.bc
 platform/web/node_modules/
+platform/web/out/
 
 # Misc
 *.debug
