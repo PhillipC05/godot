@@ -337,7 +337,19 @@ const GodotOS = {
 	godot_js_os_shell_open__proxy: 'sync',
 	godot_js_os_shell_open__sig: 'vi',
 	godot_js_os_shell_open: function (p_uri) {
-		window.open(GodotRuntime.parseString(p_uri), '_blank');
+		const uri = GodotRuntime.parseString(p_uri);
+		const allowed = ['http:', 'https:', 'mailto:', 'tel:'];
+		let scheme = '';
+		try {
+			scheme = new URL(uri).protocol;
+		} catch (_e) {
+			// Not a valid URL — fall through to the check below.
+		}
+		if (!allowed.includes(scheme)) {
+			GodotRuntime.error(`URL scheme '${scheme}' is not allowed for shell open. Allowed: ${allowed.join(', ')}`);
+			return;
+		}
+		window.open(uri, '_blank');
 	},
 
 	godot_js_os_hw_concurrency_get__proxy: 'sync',
